@@ -21,18 +21,18 @@ const formatTime = (ms: number) => {
 export default function PracticeTimer({ onSessionEnd }: PracticeTimerProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [startTime, setStartTime] = useState(0);
+  const startTimeRef = useRef<number>(0);
   const animationFrameId = useRef<number | null>(null);
   const { toast } = useToast();
 
   const animate = useCallback(() => {
-    setElapsedTime(Date.now() - startTime);
+    setElapsedTime(Date.now() - startTimeRef.current);
     animationFrameId.current = requestAnimationFrame(animate);
-  }, [startTime]);
+  }, []);
 
   useEffect(() => {
     if (isRunning) {
-      setStartTime(Date.now() - elapsedTime);
+      startTimeRef.current = Date.now() - elapsedTime;
       animationFrameId.current = requestAnimationFrame(animate);
     } else {
       if (animationFrameId.current) {

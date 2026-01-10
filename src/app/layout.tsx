@@ -4,6 +4,7 @@ import { AppProvider } from '@/components/app-provider';
 import { Toaster } from '@/components/ui/toaster';
 import BottomNav from '@/components/bottom-nav';
 import { cn } from '@/lib/utils';
+import DesktopNav from '@/components/desktop-nav';
 
 const APP_NAME = "Fluent Progress";
 const APP_DESCRIPTION = "Track your English speaking practice progress.";
@@ -46,7 +47,8 @@ export default function RootLayout({
       <body className={cn("font-body antialiased", "min-h-screen bg-background font-sans")}>
         <AppProvider>
           <div className="relative flex min-h-screen w-full flex-col">
-            <main className="flex-1 pb-24 md:pb-8">{children}</main>
+            <DesktopNav />
+            <main className="flex-1 pb-24 pt-16 md:pb-8 md:pt-20">{children}</main>
             <BottomNav />
           </div>
           <Toaster />
