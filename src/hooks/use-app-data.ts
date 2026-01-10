@@ -6,6 +6,7 @@ import type { AppData, PracticeSession, Statistics, Topic, Sentence } from '@/li
 import { isToday, isYesterday, differenceInCalendarDays } from 'date-fns';
 
 const LOCAL_STORAGE_KEY = 'fluent-progress-data';
+const API_KEY_STORAGE_KEY = 'fluent-progress-gemini-api-key';
 
 // A simple migration function to ensure all sentences have the new 'vietnamese' field.
 const runMigration = (data: AppData): AppData => {
@@ -31,6 +32,7 @@ const runMigration = (data: AppData): AppData => {
 export const useAppData = () => {
   const [data, setData] = useState<AppData>(initialData);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [geminiApiKey, setGeminiApiKeyState] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -42,6 +44,10 @@ export const useAppData = () => {
           parsedData = runMigration(parsedData); // Run migration on loaded data
           setData(parsedData);
         }
+      }
+      const apiKey = window.localStorage.getItem(API_KEY_STORAGE_KEY);
+      if (apiKey) {
+        setGeminiApiKeyState(apiKey);
       }
     } catch (error) {
       console.error('Failed to load data from localStorage', error);
@@ -58,6 +64,15 @@ export const useAppData = () => {
       }
     }
   }, [data, isLoaded]);
+
+  const setGeminiApiKey = useCallback((key: string) => {
+    setGeminiApiKeyState(key);
+    try {
+        window.localStorage.setItem(API_KEY_STORAGE_KEY, key);
+    } catch (error) {
+        console.error('Failed to save API key to localStorage', error);
+    }
+  }, []);
 
   const addPracticeSession = useCallback((duration: number) => {
     const now = Date.now();
@@ -222,5 +237,7 @@ export const useAppData = () => {
     importData,
     statistics,
     getAppData: () => data,
+    geminiApiKey,
+    setGeminiApiKey,
   };
 };

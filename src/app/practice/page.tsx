@@ -12,9 +12,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { textToSpeech } from '@/ai/flows/tts-flow';
 import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function PracticePage() {
-  const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded } = useContext(AppContext);
+  const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded, geminiApiKey } = useContext(AppContext);
   const [playingSentenceId, setPlayingSentenceId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -28,9 +29,17 @@ export default function PracticePage() {
   }, [topics, isLoaded]);
 
   const handleSpeak = async (sentenceText: string, sentenceId: string) => {
+    if (!geminiApiKey) {
+        toast({
+            variant: 'destructive',
+            title: 'Missing API Key',
+            description: 'Please set your Gemini API key in the settings page to use this feature.',
+        });
+        return;
+    }
     setPlayingSentenceId(sentenceId);
     try {
-      const { audioDataUri } = await textToSpeech(sentenceText);
+      const { audioDataUri } = await textToSpeech({text: sentenceText, apiKey: geminiApiKey});
       const audio = new Audio(audioDataUri);
       audio.play();
       audio.onended = () => setPlayingSentenceId(null);
@@ -44,6 +53,17 @@ export default function PracticePage() {
       setPlayingSentenceId(null);
     }
   };
+
+  const speakButton = (sentence: any) => (
+    <Button
+        size="icon"
+        variant="ghost"
+        onClick={() => handleSpeak(sentence.text, sentence.id)}
+        disabled={!geminiApiKey || playingSentenceId === sentence.id}
+    >
+        {playingSentenceId === sentence.id ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Volume2 className="h-5 w-5 text-accent" />}
+    </Button>
+  );
 
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -86,14 +106,16 @@ export default function PracticePage() {
                         </label>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleSpeak(sentence.text, sentence.id)}
-                          disabled={playingSentenceId === sentence.id}
-                        >
-                          {playingSentenceId === sentence.id ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Volume2 className="h-5 w-5 text-accent" />}
-                        </Button>
+                        {geminiApiKey ? (
+                             speakButton(sentence)
+                        ) : (
+                            <Tooltip>
+                                <TooltipTrigger>{speakButton(sentence)}</TooltipTrigger>
+                                <TooltipContent>
+                                <p>Please add a Gemini API key in settings.</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
                         <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
                                 <Languages className="h-5 w-5 text-accent" />

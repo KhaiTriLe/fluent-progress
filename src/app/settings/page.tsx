@@ -1,18 +1,25 @@
 "use client";
 
-import { useContext, useRef } from 'react';
+import { useContext, useRef, useState, useEffect } from 'react';
 import { AppContext } from '@/components/app-provider';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Download, Upload, KeyRound, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { AppData } from '@/lib/types';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function SettingsPage() {
-  const { getAppData, importData } = useContext(AppContext);
+  const { getAppData, importData, geminiApiKey, setGeminiApiKey } = useContext(AppContext);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [apiKey, setApiKey] = useState(geminiApiKey || '');
+
+  useEffect(() => {
+    setApiKey(geminiApiKey || '');
+  }, [geminiApiKey]);
 
   const handleExport = () => {
     const data = getAppData();
@@ -71,18 +78,55 @@ export default function SettingsPage() {
     }
   };
 
+  const handleApiKeySave = () => {
+    setGeminiApiKey(apiKey);
+    toast({
+      title: 'API Key Saved',
+      description: 'Your Gemini API key has been updated.',
+    });
+  };
 
   return (
-    <div className="container mx-auto max-w-4xl p-4 md:p-8">
-      <header className="mb-8">
+    <div className="container mx-auto max-w-4xl p-4 md:p-8 space-y-8">
+      <header>
         <h1 className="font-headline text-4xl font-bold tracking-tight text-primary">
           Settings
         </h1>
         <p className="text-muted-foreground mt-2 text-lg">
-          Manage your application data.
+          Manage your application data and settings.
         </p>
       </header>
       
+      <Card>
+        <CardHeader>
+          <CardTitle>Gemini API Key</CardTitle>
+          <CardDescription>
+            Provide your Gemini API key to enable AI features like text-to-speech. Your key is stored securely in your browser's local storage.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+            <Label htmlFor="api-key">Your API Key</Label>
+            <div className="flex gap-2">
+                <Input
+                    id="api-key"
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Enter your Gemini API key"
+                />
+                 <Button onClick={handleApiKeySave} disabled={apiKey === geminiApiKey}>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save
+                </Button>
+            </div>
+        </CardContent>
+        <CardFooter>
+            <p className="text-sm text-muted-foreground">
+                You can get a free API key from <a href="https://aistudio.google.com/keys" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a>.
+            </p>
+        </CardFooter>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Data Management</CardTitle>

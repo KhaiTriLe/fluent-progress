@@ -15,6 +15,8 @@ type AppContextType = {
   importData: (data: AppData) => void;
   statistics: Statistics;
   getAppData: () => AppData;
+  geminiApiKey: string | null;
+  setGeminiApiKey: (key: string) => void;
 };
 
 export const AppContext = createContext<AppContextType>({
@@ -35,6 +37,8 @@ export const AppContext = createContext<AppContextType>({
     lastSessionDate: null,
   },
   getAppData: () => ({ topics: [], sessions: [] }),
+  geminiApiKey: null,
+  setGeminiApiKey: () => {},
 });
 
 export function AppProvider({ children }: { children: React.ReactNode }) {

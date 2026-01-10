@@ -11,8 +11,12 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import wav from 'wav';
 import { googleAI } from '@genkit-ai/google-genai';
+import { genkit } from 'genkit';
 
-const TextToSpeechInputSchema = z.string().describe('The text to convert to speech.');
+const TextToSpeechInputSchema = z.object({
+  text: z.string().describe('The text to convert to speech.'),
+  apiKey: z.string().optional().describe('The Gemini API Key.'),
+});
 export type TextToSpeechInput = z.infer<typeof TextToSpeechInputSchema>;
 
 const TextToSpeechOutputSchema = z.object({
@@ -60,8 +64,13 @@ const ttsFlow = ai.defineFlow(
       inputSchema: TextToSpeechInputSchema,
       outputSchema: TextToSpeechOutputSchema,
     },
-    async (query) => {
-        const { media } = await ai.generate({
+    async ({ text, apiKey }) => {
+        
+        const customAI = genkit({
+            plugins: [googleAI({ apiKey: apiKey || process.env.GEMINI_API_KEY })],
+        });
+
+        const { media } = await customAI.generate({
             model: googleAI.model('gemini-2.5-flash-preview-tts'),
             config: {
               responseModalities: ['AUDIO'],
@@ -71,7 +80,7 @@ const ttsFlow = ai.defineFlow(
                 },
               },
             },
-            prompt: query,
+            prompt: text,
         });
 
         if (!media) {
