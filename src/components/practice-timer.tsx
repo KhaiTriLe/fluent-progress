@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Play, Pause, Square, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { useNavigationGuard } from '@/hooks/use-navigation-guard';
 
 interface PracticeTimerProps {
   onSessionEnd: (duration: number) => void;
@@ -35,34 +35,13 @@ export default function PracticeTimer({ onSessionEnd }: PracticeTimerProps) {
   const startTimeRef = useRef<number>(0);
   const animationFrameId = useRef<number | null>(null);
   const { toast } = useToast();
-  
-  const [showExitConfirm, setShowExitConfirm] = useState(false);
-  const [nextPath, setNextPath] = useState('');
-  const router = useRouter();
+
+  const { showConfirmation, confirm, cancel } = useNavigationGuard(isRunning);
 
   const animate = useCallback(() => {
     setElapsedTime(Date.now() - startTimeRef.current);
     animationFrameId.current = requestAnimationFrame(animate);
   }, []);
-
-  useEffect(() => {
-    // For browser refresh/close tab
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (isRunning) {
-        event.preventDefault();
-        event.returnValue = 'You have an active practice session. Are you sure you want to leave?';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-    };
-  }, [isRunning]);
 
   useEffect(() => {
     if (isRunning) {
@@ -96,36 +75,10 @@ export default function PracticeTimer({ onSessionEnd }: PracticeTimerProps) {
     setElapsedTime(0);
   };
 
-  // This is a placeholder for Next.js router integration to prevent leaving the page
-  useEffect(() => {
-    const handleRouteChange = (url: string) => {
-      if (isRunning && url !== window.location.pathname) {
-        setShowExitConfirm(true);
-        setNextPath(url);
-        // This is a trick to prevent route change in some Next.js versions.
-        // It might not be officially supported and could break.
-        // A more robust solution might involve a custom router provider.
-        router.events.emit('routeChangeError');
-        throw 'Route change blocked by practice session.';
-      }
-    };
-
-    // This is a simplified example. In a real Next.js 13+ app with App Router,
-    // you would use a different approach, possibly with a layout and context
-    // to intercept navigation. For this example, we'll imagine this works.
-    // In a real scenario, `next/navigation`'s `useRouter` doesn't have `events`.
-    // This code is illustrative of the goal.
-    // For now, we will rely on the beforeunload event.
-
-    return () => {
-      // Cleanup logic here
-    };
-  }, [isRunning, router.events]);
-
-  const confirmNavigation = () => {
-    setIsRunning(false);
-    router.push(nextPath);
-  };
+  const handleConfirmNavigation = () => {
+    setIsRunning(false); // Allow navigation
+    confirm();
+  }
 
   return (
     <>
@@ -166,7 +119,7 @@ export default function PracticeTimer({ onSessionEnd }: PracticeTimerProps) {
           </div>
         </CardContent>
       </Card>
-      <AlertDialog open={showExitConfirm} onOpenChange={setShowExitConfirm}>
+      <AlertDialog open={showConfirmation} onOpenChange={cancel}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>End session?</AlertDialogTitle>
@@ -175,8 +128,8 @@ export default function PracticeTimer({ onSessionEnd }: PracticeTimerProps) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Stay</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmNavigation}>Leave Page</AlertDialogAction>
+            <AlertDialogCancel onClick={cancel}>Stay</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmNavigation}>Leave Page</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

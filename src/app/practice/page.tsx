@@ -5,10 +5,10 @@ import PracticeTimer from '@/components/practice-timer';
 import { AppContext } from '@/components/app-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Info, X, MinusCircle } from 'lucide-react';
-import Link from 'next/link';
+import { PlusCircle, Info } from 'lucide-react';
 import SentenceLibrary from '@/components/sentence-library';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function PracticePage() {
   const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded } = useContext(AppContext);
@@ -21,10 +21,6 @@ export default function PracticePage() {
         .map(sentence => ({ ...sentence, topicId: topic.id }))
     );
   }, [topics, isLoaded]);
-
-  const handleUnselect = (topicId: string, sentenceId: string) => {
-    toggleSentenceSelection(topicId, sentenceId, false);
-  }
 
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -43,7 +39,7 @@ export default function PracticePage() {
         <CardHeader>
           <CardTitle>Your Practice Set</CardTitle>
           <CardDescription>
-            These are your selected sentences. Increment the count or remove them from your set.
+            These are your selected sentences. Increment the count or unselect them to remove them.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,7 +50,17 @@ export default function PracticePage() {
                   key={sentence.id}
                   className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4 shadow-sm"
                 >
-                  <p className="flex-1 text-card-foreground">{sentence.text}</p>
+                  <div className="flex flex-1 items-center gap-4">
+                    <Checkbox
+                      id={`practice-cb-${sentence.id}`}
+                      checked={sentence.selected}
+                      onCheckedChange={(checked) => toggleSentenceSelection(sentence.topicId, sentence.id, !!checked)}
+                      aria-label={`Unselect ${sentence.text}`}
+                    />
+                     <label htmlFor={`practice-cb-${sentence.id}`} className="flex-1 cursor-pointer text-sm">
+                        {sentence.text}
+                     </label>
+                  </div>
                   <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-primary">{sentence.practiceCount}</span>
                     <Button
@@ -64,15 +70,6 @@ export default function PracticePage() {
                       aria-label={`Increment count for ${sentence.text}`}
                     >
                       <PlusCircle className="h-6 w-6 text-accent" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => handleUnselect(sentence.topicId, sentence.id)}
-                      aria-label={`Unselect ${sentence.text}`}
-                    >
-                      <MinusCircle className="h-5 w-5" />
                     </Button>
                   </div>
                 </li>
