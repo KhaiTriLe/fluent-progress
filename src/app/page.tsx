@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { AppContext } from "@/components/app-provider";
 import StatCard from "@/components/stat-card";
 import { Flame, Timer, BarChart3, Star } from "lucide-react";
-import { formatDistance, format } from "date-fns";
+import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
