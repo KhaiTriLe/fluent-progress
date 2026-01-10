@@ -12,6 +12,7 @@ import type { Topic, Sentence } from "@/lib/types";
 interface SentenceFormProps {
   topic: Topic | null;
   sentence: Sentence | null;
+  isAddingSentenceToTopic: boolean;
   onClose: () => void;
   crudTopic: (action: 'add' | 'update', topic: Topic) => void;
   crudSentence: (action: 'add' | 'update', topicId: string, sentence: Sentence) => void;
@@ -22,10 +23,10 @@ const formSchema = z.object({
   text: z.string().min(1, "Sentence text is required.").optional(),
 });
 
-export default function SentenceForm({ topic, sentence, onClose, crudTopic, crudSentence }: SentenceFormProps) {
-  const isEditingTopic = topic && !sentence;
+export default function SentenceForm({ topic, sentence, isAddingSentenceToTopic, onClose, crudTopic, crudSentence }: SentenceFormProps) {
+  const isEditingTopic = topic && !sentence && !isAddingSentenceToTopic;
   const isEditingSentence = topic && sentence;
-  const isAddingSentence = topic && !sentence;
+  const isAddingSentence = topic && isAddingSentenceToTopic;
   const isAddingTopic = !topic && !sentence;
   
   const form = useForm<z.infer<typeof formSchema>>({

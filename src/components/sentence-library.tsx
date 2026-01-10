@@ -21,23 +21,27 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTopic, setEditingTopic] = useState<Topic | null>(null);
   const [editingSentence, setEditingSentence] = useState<Sentence | null>(null);
+  const [isAddingSentenceToTopic, setIsAddingSentenceToTopic] = useState(false);
   const [openAccordionItems, setOpenAccordionItems] = useState<string[]>([]);
 
   const handleOpenFormForNewTopic = () => {
     setEditingTopic(null);
     setEditingSentence(null);
+    setIsAddingSentenceToTopic(false);
     setIsFormOpen(true);
   };
   
   const handleOpenFormForNewSentence = (topic: Topic) => {
     setEditingTopic(topic);
     setEditingSentence(null);
+    setIsAddingSentenceToTopic(true);
     setIsFormOpen(true);
   };
 
   const handleOpenFormForEdit = (topic: Topic, sentence?: Sentence) => {
     setEditingTopic(topic);
     setEditingSentence(sentence || null);
+    setIsAddingSentenceToTopic(false);
     setIsFormOpen(true);
   };
   
@@ -45,6 +49,7 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
     setIsFormOpen(false);
     setEditingTopic(null);
     setEditingSentence(null);
+    setIsAddingSentenceToTopic(false);
   };
   
   const handleDeleteTopic = (topic: Topic) => {
@@ -54,6 +59,14 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
   const handleDeleteSentence = (topicId: string, sentence: Sentence) => {
     crudSentence('delete', topicId, sentence);
   }
+  
+  const getDialogTitle = () => {
+    if (isAddingSentenceToTopic && editingTopic) return `Add Sentence to "${editingTopic.name}"`;
+    if (editingSentence && editingTopic) return 'Edit Sentence';
+    if (editingTopic) return 'Edit Topic';
+    return 'Add New Topic';
+  }
+
 
   return (
     <>
@@ -149,7 +162,7 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
         </div>
       )}
       
-      {!isLoaded && topics.length === 0 && (
+      {isLoaded && topics.length === 0 && (
         <div className="text-center text-muted-foreground py-12">
             <p>You haven't created any topics yet.</p>
             <Button onClick={handleOpenFormForNewTopic} className="mt-4"><Plus className="mr-2 h-4 w-4" /> Create Your First Topic</Button>
@@ -161,16 +174,13 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-                {editingTopic && !editingSentence && !isFormOpen ? `Add Sentence to "${editingTopic.name}"` :
-                 !editingTopic && !editingSentence ? 'Add New Topic' :
-                 editingTopic && editingSentence ? 'Edit Sentence' :
-                 editingTopic ? 'Edit Topic' : `Add Sentence to "${editingTopic?.name}"`
-                }
+                {getDialogTitle()}
             </DialogTitle>
           </DialogHeader>
           <SentenceForm
             topic={editingTopic}
             sentence={editingSentence}
+            isAddingSentenceToTopic={isAddingSentenceToTopic}
             onClose={handleFormClose}
             crudTopic={crudTopic}
             crudSentence={crudSentence}
