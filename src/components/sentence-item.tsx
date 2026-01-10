@@ -25,7 +25,7 @@ interface SentenceItemProps {
 }
 
 export default function SentenceItem({ sentence, topic, onToggleSelection, onEdit, onDelete }: SentenceItemProps) {
-  const { geminiApiKey } = useContext(AppContext);
+  const { geminiApiKey, audioCache, setAudioCache } = useContext(AppContext);
   const [isPlaying, setIsPlaying] = useState(false);
   const { toast } = useToast();
 
@@ -38,9 +38,19 @@ export default function SentenceItem({ sentence, topic, onToggleSelection, onEdi
         });
         return;
     }
+
+    if (audioCache[sentence.id]) {
+        const audio = new Audio(audioCache[sentence.id]);
+        setIsPlaying(true);
+        audio.play();
+        audio.onended = () => setIsPlaying(false);
+        return;
+    }
+
     setIsPlaying(true);
     try {
       const { audioDataUri } = await textToSpeech({text: sentence.text, apiKey: geminiApiKey});
+      setAudioCache(sentence.id, audioDataUri);
       const audio = new Audio(audioDataUri);
       audio.play();
       audio.onended = () => setIsPlaying(false);
@@ -49,7 +59,7 @@ export default function SentenceItem({ sentence, topic, onToggleSelection, onEdi
       toast({
         variant: 'destructive',
         title: 'Speech Error',
-        description: 'Could not generate audio for this sentence.',
+        description: 'Could not generate audio. Check your API key or network connection.',
       });
       setIsPlaying(false);
     }

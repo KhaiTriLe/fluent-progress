@@ -4,18 +4,20 @@ import { useContext, useRef, useState, useEffect } from 'react';
 import { AppContext } from '@/components/app-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Download, Upload, KeyRound, Save } from 'lucide-react';
+import { Download, Upload, KeyRound, Save, LoaderCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { AppData } from '@/lib/types';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { textToSpeech } from '@/ai/flows/tts-flow';
 
 export default function SettingsPage() {
   const { getAppData, importData, geminiApiKey, setGeminiApiKey } = useContext(AppContext);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [apiKey, setApiKey] = useState(geminiApiKey || '');
+  const [isTestingKey, setIsTestingKey] = useState(false);
 
   useEffect(() => {
     setApiKey(geminiApiKey || '');
@@ -78,12 +80,24 @@ export default function SettingsPage() {
     }
   };
 
-  const handleApiKeySave = () => {
-    setGeminiApiKey(apiKey);
-    toast({
-      title: 'API Key Saved',
-      description: 'Your Gemini API key has been updated.',
-    });
+  const handleApiKeySave = async () => {
+    setIsTestingKey(true);
+    try {
+        await textToSpeech({text: 'test', apiKey: apiKey});
+        setGeminiApiKey(apiKey);
+        toast({
+            title: 'API Key Saved',
+            description: 'Your Gemini API key is valid and has been saved.',
+        });
+    } catch (error) {
+        toast({
+            variant: 'destructive',
+            title: 'Invalid API Key',
+            description: 'The key you entered could not be verified. Please check it and try again.',
+        });
+    } finally {
+        setIsTestingKey(false);
+    }
   };
 
   return (
@@ -113,16 +127,17 @@ export default function SettingsPage() {
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="Enter your Gemini API key"
+                    disabled={isTestingKey}
                 />
-                 <Button onClick={handleApiKeySave} disabled={apiKey === geminiApiKey}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save
+                 <Button onClick={handleApiKeySave} disabled={apiKey === geminiApiKey || isTestingKey}>
+                    {isTestingKey ? <LoaderCircle className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    {isTestingKey ? 'Verifying...' : 'Save'}
                 </Button>
             </div>
         </CardContent>
         <CardFooter>
             <p className="text-sm text-muted-foreground">
-                You can get a free API key from <a href="https://aistudio.google.com/keys" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a>.
+                You can get a free API key from <a href="https://aistudio.google.com/app/api-keys" target="_blank" rel="noopener noreferrer" className="underline">Google AI Studio</a>.
             </p>
         </CardFooter>
       </Card>

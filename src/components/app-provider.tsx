@@ -17,6 +17,8 @@ type AppContextType = {
   getAppData: () => AppData;
   geminiApiKey: string | null;
   setGeminiApiKey: (key: string) => void;
+  audioCache: Record<string, string>;
+  setAudioCache: (id: string, data: string) => void;
 };
 
 export const AppContext = createContext<AppContextType>({
@@ -39,6 +41,8 @@ export const AppContext = createContext<AppContextType>({
   getAppData: () => ({ topics: [], sessions: [] }),
   geminiApiKey: null,
   setGeminiApiKey: () => {},
+  audioCache: {},
+  setAudioCache: () => {},
 });
 
 export function AppProvider({ children }: { children: React.ReactNode }) {

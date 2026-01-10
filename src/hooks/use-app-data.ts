@@ -33,6 +33,7 @@ export const useAppData = () => {
   const [data, setData] = useState<AppData>(initialData);
   const [isLoaded, setIsLoaded] = useState(false);
   const [geminiApiKey, setGeminiApiKeyState] = useState<string | null>(null);
+  const [audioCache, setAudioCacheState] = useState<Record<string, string>>({});
 
   useEffect(() => {
     try {
@@ -72,6 +73,10 @@ export const useAppData = () => {
     } catch (error) {
         console.error('Failed to save API key to localStorage', error);
     }
+  }, []);
+
+  const setAudioCache = useCallback((id: string, audioData: string) => {
+    setAudioCacheState(prev => ({...prev, [id]: audioData}));
   }, []);
 
   const addPracticeSession = useCallback((duration: number) => {
@@ -239,5 +244,7 @@ export const useAppData = () => {
     getAppData: () => data,
     geminiApiKey,
     setGeminiApiKey,
+    audioCache,
+    setAudioCache,
   };
 };

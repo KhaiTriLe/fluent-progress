@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function PracticePage() {
-  const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded, geminiApiKey } = useContext(AppContext);
+  const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded, geminiApiKey, audioCache, setAudioCache } = useContext(AppContext);
   const [playingSentenceId, setPlayingSentenceId] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -37,9 +37,19 @@ export default function PracticePage() {
         });
         return;
     }
+
+    if (audioCache[sentenceId]) {
+      const audio = new Audio(audioCache[sentenceId]);
+      setPlayingSentenceId(sentenceId);
+      audio.play();
+      audio.onended = () => setPlayingSentenceId(null);
+      return;
+    }
+
     setPlayingSentenceId(sentenceId);
     try {
       const { audioDataUri } = await textToSpeech({text: sentenceText, apiKey: geminiApiKey});
+      setAudioCache(sentenceId, audioDataUri);
       const audio = new Audio(audioDataUri);
       audio.play();
       audio.onended = () => setPlayingSentenceId(null);
@@ -48,7 +58,7 @@ export default function PracticePage() {
       toast({
         variant: 'destructive',
         title: 'Speech Error',
-        description: 'Could not generate audio for this sentence.',
+        description: 'Could not generate audio for this sentence. Check your API key or network connection.',
       });
       setPlayingSentenceId(null);
     }
