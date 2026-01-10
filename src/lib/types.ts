@@ -1,6 +1,7 @@
 export interface Sentence {
   id: string;
   text: string;
+  vietnamese: string;
   practiceCount: number;
   selected: boolean;
 }

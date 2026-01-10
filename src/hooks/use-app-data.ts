@@ -7,6 +7,27 @@ import { isToday, isYesterday, differenceInCalendarDays } from 'date-fns';
 
 const LOCAL_STORAGE_KEY = 'fluent-progress-data';
 
+// A simple migration function to ensure all sentences have the new 'vietnamese' field.
+const runMigration = (data: AppData): AppData => {
+    let needsUpdate = false;
+    const migratedTopics = data.topics.map(topic => {
+        const migratedSentences = topic.sentences.map(sentence => {
+            if (typeof (sentence as any).vietnamese === 'undefined') {
+                needsUpdate = true;
+                return { ...sentence, vietnamese: 'N/A' }; // Add a default value
+            }
+            return sentence;
+        });
+        return { ...topic, sentences: migratedSentences };
+    });
+
+    if (needsUpdate) {
+        return { ...data, topics: migratedTopics };
+    }
+    return data;
+};
+
+
 export const useAppData = () => {
   const [data, setData] = useState<AppData>(initialData);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -15,9 +36,10 @@ export const useAppData = () => {
     try {
       const item = window.localStorage.getItem(LOCAL_STORAGE_KEY);
       if (item) {
-        const parsedData = JSON.parse(item);
+        let parsedData = JSON.parse(item);
         // Basic validation
         if (parsedData.topics && parsedData.sessions) {
+          parsedData = runMigration(parsedData); // Run migration on loaded data
           setData(parsedData);
         }
       }
@@ -123,7 +145,8 @@ export const useAppData = () => {
 
   const importData = useCallback((importedData: AppData) => {
     // Add validation here if necessary
-    setData(importedData);
+    const migratedData = runMigration(importedData);
+    setData(migratedData);
   }, []);
 
 

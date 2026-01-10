@@ -4,13 +4,13 @@ import { useContext, useState } from "react";
 import { AppContext } from "@/components/app-provider";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, Edit } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SentenceForm from "@/components/sentence-form";
 import type { Topic, Sentence } from "@/lib/types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import SentenceItem from "@/components/sentence-item";
 
 interface SentenceLibraryProps {
     showHeader?: boolean;
@@ -123,26 +123,14 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
              <AccordionContent className="p-4 pt-0">
                <ul className="space-y-3">
                  {topic.sentences.map((sentence) => (
-                   <li key={sentence.id} className="flex items-center gap-4 rounded-md p-2 hover:bg-accent/50">
-                     <Checkbox
-                       id={`cb-${sentence.id}`}
-                       checked={sentence.selected}
-                       onCheckedChange={(checked) => toggleSentenceSelection(topic.id, sentence.id, !!checked)}
-                     />
-                     <label htmlFor={`cb-${sentence.id}`} className="flex-1 cursor-pointer text-sm">
-                       {sentence.text}
-                     </label>
-                     <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenFormForEdit(topic, sentence)}><Edit className="h-4 w-4" /></Button>
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground"><Trash2 className="h-4 w-4" /></Button></AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete this sentence.</AlertDialogDescription></AlertDialogHeader>
-                                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteSentence(topic.id, sentence)}>Delete</AlertDialogAction></AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                     </div>
-                   </li>
+                   <SentenceItem 
+                    key={sentence.id}
+                    sentence={sentence}
+                    topic={topic}
+                    onToggleSelection={toggleSentenceSelection}
+                    onEdit={handleOpenFormForEdit}
+                    onDelete={handleDeleteSentence}
+                   />
                  ))}
                  {topic.sentences.length === 0 && (
                     <li className="text-center text-sm text-muted-foreground py-4">

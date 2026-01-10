@@ -21,6 +21,7 @@ interface SentenceFormProps {
 const formSchema = z.object({
   name: z.string().min(1, "Topic name is required.").optional(),
   text: z.string().min(1, "Sentence text is required.").optional(),
+  vietnamese: z.string().min(1, "Vietnamese meaning is required.").optional(),
 });
 
 export default function SentenceForm({ topic, sentence, isAddingSentenceToTopic, onClose, crudTopic, crudSentence }: SentenceFormProps) {
@@ -34,6 +35,7 @@ export default function SentenceForm({ topic, sentence, isAddingSentenceToTopic,
     defaultValues: {
       name: isEditingTopic ? topic.name : "",
       text: isEditingSentence ? sentence.text : "",
+      vietnamese: isEditingSentence ? sentence.vietnamese : "",
     },
   });
 
@@ -47,16 +49,17 @@ export default function SentenceForm({ topic, sentence, isAddingSentenceToTopic,
       crudTopic('add', newTopic);
     } else if (isEditingTopic && values.name) {
       crudTopic('update', { ...topic, name: values.name });
-    } else if (isAddingSentence && values.text && topic) {
+    } else if (isAddingSentence && values.text && values.vietnamese && topic) {
       const newSentence: Sentence = {
         id: `sent-${Date.now()}`,
         text: values.text,
+        vietnamese: values.vietnamese,
         practiceCount: 0,
         selected: false,
       };
       crudSentence('add', topic.id, newSentence);
-    } else if (isEditingSentence && values.text && topic && sentence) {
-      crudSentence('update', topic.id, { ...sentence, text: values.text });
+    } else if (isEditingSentence && values.text && values.vietnamese && topic && sentence) {
+      crudSentence('update', topic.id, { ...sentence, text: values.text, vietnamese: values.vietnamese });
     }
     onClose();
   }
@@ -80,19 +83,34 @@ export default function SentenceForm({ topic, sentence, isAddingSentenceToTopic,
           />
         )}
         {(isAddingSentence || isEditingSentence) && (
-           <FormField
-            control={form.control}
-            name="text"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Sentence Text</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="e.g., Let's circle back on this next week." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="text"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sentence (English)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g., Let's circle back on this next week." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+             <FormField
+              control={form.control}
+              name="vietnamese"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vietnamese Meaning</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="e.g., Hãy thảo luận lại về vấn đề này vào tuần tới." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
         <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
