@@ -5,11 +5,13 @@ import PracticeTimer from '@/components/practice-timer';
 import { AppContext } from '@/components/app-provider';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Info } from 'lucide-react';
+import { PlusCircle, Info, X, MinusCircle } from 'lucide-react';
 import Link from 'next/link';
+import SentenceLibrary from '@/components/sentence-library';
+import { Separator } from '@/components/ui/separator';
 
 export default function PracticePage() {
-  const { topics, addPracticeSession, incrementSentenceCount, isLoaded } = useContext(AppContext);
+  const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded } = useContext(AppContext);
 
   const selectedSentences = useMemo(() => {
     if (!isLoaded) return [];
@@ -19,6 +21,10 @@ export default function PracticePage() {
         .map(sentence => ({ ...sentence, topicId: topic.id }))
     );
   }, [topics, isLoaded]);
+
+  const handleUnselect = (topicId: string, sentenceId: string) => {
+    toggleSentenceSelection(topicId, sentenceId, false);
+  }
 
   return (
     <div className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -35,9 +41,9 @@ export default function PracticePage() {
 
       <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Practice Sentences</CardTitle>
+          <CardTitle>Your Practice Set</CardTitle>
           <CardDescription>
-            These are the sentences you've selected. Tap the plus button each time you practice one.
+            These are your selected sentences. Increment the count or remove them from your set.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -49,7 +55,7 @@ export default function PracticePage() {
                   className="flex items-center justify-between gap-4 rounded-lg border bg-card p-4 shadow-sm"
                 >
                   <p className="flex-1 text-card-foreground">{sentence.text}</p>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
                     <span className="text-lg font-bold text-primary">{sentence.practiceCount}</span>
                     <Button
                       size="icon"
@@ -58,6 +64,15 @@ export default function PracticePage() {
                       aria-label={`Increment count for ${sentence.text}`}
                     >
                       <PlusCircle className="h-6 w-6 text-accent" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleUnselect(sentence.topicId, sentence.id)}
+                      aria-label={`Unselect ${sentence.text}`}
+                    >
+                      <MinusCircle className="h-5 w-5" />
                     </Button>
                   </div>
                 </li>
@@ -68,15 +83,17 @@ export default function PracticePage() {
               <Info className="h-10 w-10 text-muted-foreground" />
               <h3 className="mt-4 text-lg font-semibold">No Sentences Selected</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Go to the sentences page to select some for your practice session.
+                Select sentences from your library below to start practicing.
               </p>
-              <Button asChild className="mt-6">
-                <Link href="/sentences">Select Sentences</Link>
-              </Button>
             </div>
           )}
         </CardContent>
       </Card>
+      
+      <Separator className="my-12" />
+
+      <SentenceLibrary />
+
     </div>
   );
 }
