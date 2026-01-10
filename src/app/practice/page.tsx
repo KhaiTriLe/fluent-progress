@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { textToSpeech } from '@/ai/flows/tts-flow';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 export default function PracticePage() {
   const { topics, addPracticeSession, incrementSentenceCount, toggleSentenceSelection, isLoaded, geminiApiKey, audioCache, setAudioCache } = useContext(AppContext);
@@ -119,12 +119,14 @@ export default function PracticePage() {
                         {geminiApiKey ? (
                              speakButton(sentence)
                         ) : (
-                            <Tooltip>
-                                <TooltipTrigger>{speakButton(sentence)}</TooltipTrigger>
-                                <TooltipContent>
-                                <p>Please add a Gemini API key in settings.</p>
-                                </TooltipContent>
-                            </Tooltip>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger>{speakButton(sentence)}</TooltipTrigger>
+                                    <TooltipContent>
+                                    <p>Please add a Gemini API key in settings.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
                         )}
                         <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">

@@ -14,7 +14,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { textToSpeech } from '@/ai/flows/tts-flow';
 import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 interface SentenceItemProps {
   sentence: Sentence;
@@ -85,12 +85,14 @@ export default function SentenceItem({ sentence, topic, onToggleSelection, onEdi
           </label>
           <div className="flex items-center gap-1">
             {geminiApiKey ? speakButton : (
-                <Tooltip>
-                    <TooltipTrigger>{speakButton}</TooltipTrigger>
-                    <TooltipContent>
-                        <p>Please add a Gemini API key in settings.</p>
-                    </TooltipContent>
-                </Tooltip>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger>{speakButton}</TooltipTrigger>
+                        <TooltipContent>
+                            <p>Please add a Gemini API key in settings.</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
             )}
             <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8">

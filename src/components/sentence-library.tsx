@@ -100,26 +100,42 @@ export default function SentenceLibrary({ showHeader = false }: SentenceLibraryP
          <Accordion type="multiple" className="w-full space-y-4" value={openAccordionItems} onValueChange={setOpenAccordionItems}>
          {topics.map((topic) => (
            <AccordionItem key={topic.id} value={topic.id} className="rounded-lg border bg-card shadow-sm">
-             <AccordionTrigger className="p-4 font-headline text-lg hover:no-underline">
-               <div className="flex flex-1 items-center justify-between pr-4">
+             <div className="flex items-center p-4">
+               <AccordionTrigger className="flex-1 font-headline text-lg hover:no-underline py-0">
                  <span>{topic.name}</span>
-                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); handleOpenFormForEdit(topic); }}>
-                        <Edit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive hover:text-destructive-foreground" onClick={(e) => e.stopPropagation()}><Trash2 className="h-4 w-4" /></Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the topic "{topic.name}" and all its sentences.</AlertDialogDescription></AlertDialogHeader>
-                            <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteTopic(topic)}>Delete</AlertDialogAction></AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
-                    <Button variant="outline" size="sm" className="h-8" onClick={(e) => { e.stopPropagation(); handleOpenFormForNewSentence(topic); }}><Plus className="mr-2 h-4 w-4" /> Add</Button>
-                 </div>
+               </AccordionTrigger>
+               <div className="flex items-center gap-2 ml-4">
+                  <button 
+                    className="inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent hover:text-accent-foreground transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleOpenFormForEdit(topic); }}
+                    aria-label="Edit topic"
+                  >
+                      <Edit className="h-4 w-4" />
+                  </button>
+                  <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                          <button 
+                            className="inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                            aria-label="Delete topic"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete the topic "{topic.name}" and all its sentences.</AlertDialogDescription></AlertDialogHeader>
+                          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteTopic(topic)}>Delete</AlertDialogAction></AlertDialogFooter>
+                      </AlertDialogContent>
+                  </AlertDialog>
+                  <button 
+                    className="inline-flex items-center justify-center rounded-md border border-input bg-background h-8 px-3 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+                    onClick={(e) => { e.stopPropagation(); handleOpenFormForNewSentence(topic); }}
+                    aria-label="Add sentence"
+                  >
+                    <Plus className="mr-2 h-4 w-4" /> Add
+                  </button>
                </div>
-             </AccordionTrigger>
+             </div>
              <AccordionContent className="p-4 pt-0">
                <ul className="space-y-3">
                  {topic.sentences.map((sentence) => (
