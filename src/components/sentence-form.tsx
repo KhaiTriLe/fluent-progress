@@ -18,17 +18,24 @@ interface SentenceFormProps {
   crudSentence: (action: 'add' | 'update', topicId: string, sentence: Sentence) => void;
 }
 
-const formSchema = z.object({
-  name: z.string().min(1, "Topic name is required.").optional(),
-  text: z.string().min(1, "Sentence text is required.").optional(),
-  vietnamese: z.string().min(1, "Vietnamese meaning is required.").optional(),
-});
-
 export default function SentenceForm({ topic, sentence, isAddingSentenceToTopic, onClose, crudTopic, crudSentence }: SentenceFormProps) {
   const isEditingTopic = topic && !sentence && !isAddingSentenceToTopic;
   const isEditingSentence = topic && sentence;
   const isAddingSentence = topic && isAddingSentenceToTopic;
   const isAddingTopic = !topic && !sentence;
+  
+  // Create dynamic schema based on form mode
+  const formSchema = z.object({
+    name: (isAddingTopic || isEditingTopic) 
+      ? z.string().min(1, "Topic name is required.")
+      : z.string().optional(),
+    text: (isAddingSentence || isEditingSentence)
+      ? z.string().min(1, "Sentence text is required.")
+      : z.string().optional(),
+    vietnamese: (isAddingSentence || isEditingSentence)
+      ? z.string().min(1, "Vietnamese meaning is required.")
+      : z.string().optional(),
+  });
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
