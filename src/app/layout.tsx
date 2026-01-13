@@ -5,7 +5,6 @@ import { Toaster } from '@/components/ui/toaster';
 import BottomNav from '@/components/bottom-nav';
 import { cn } from '@/lib/utils';
 import DesktopNav from '@/components/desktop-nav';
-import PWARegister from '@/components/pwa-register';
 
 const APP_NAME = "Fluent Progress";
 const APP_DESCRIPTION = "Track your English speaking practice progress.";
@@ -25,15 +24,6 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
-  },
-  icons: {
-    icon: [
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
-    ],
   },
 };
 
@@ -56,7 +46,6 @@ export default function RootLayout({
       </head>
       <body className={cn("font-body antialiased", "min-h-screen bg-background font-sans")}>
         <AppProvider>
-          <PWARegister />
           <div className="relative flex min-h-screen w-full flex-col">
             <DesktopNav />
             <main className="flex-1 pb-24 pt-16 md:pb-8 md:pt-20">{children}</main>
